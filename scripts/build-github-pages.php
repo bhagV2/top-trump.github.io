@@ -43,7 +43,34 @@ copyDirectory(
 );
 
 $docsApiConfig = $docsRoot . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'api-config.js';
-if (!is_file($docsApiConfig)) {
+if (($apiUrl = getenv('TOPTRUMP_API_URL')) !== false && $apiUrl !== '') {
+    $apiUrlParts = parse_url($apiUrl);
+    if (
+        filter_var($apiUrl, FILTER_VALIDATE_URL) === false
+        || !is_array($apiUrlParts)
+        || strtolower($apiUrlParts['scheme'] ?? '') !== 'https'
+        || empty($apiUrlParts['host'])
+        || isset($apiUrlParts['user'])
+        || isset($apiUrlParts['pass'])
+        || isset($apiUrlParts['query'])
+        || isset($apiUrlParts['fragment'])
+    ) {
+        throw new RuntimeException('TOPTRUMP_API_URL doit être une URL HTTPS valide, sans paramètres ni fragment.');
+    }
+
+    $encodedApiUrl = json_encode($apiUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    if (!is_string($encodedApiUrl)) {
+        throw new RuntimeException('Impossible d’encoder TOPTRUMP_API_URL.');
+    }
+    writeFile(
+        $docsApiConfig,
+        'window.TOPTRUMP_API_URL = ' . $encodedApiUrl . ';' . PHP_EOL . PHP_EOL
+        . "window.apiFetch = (url, options = {}) => fetch(url, {" . PHP_EOL
+        . "  ...options," . PHP_EOL
+        . "  credentials: 'include'," . PHP_EOL
+        . '});' . PHP_EOL
+    );
+} elseif (!is_file($docsApiConfig)) {
     throw new RuntimeException('Ajoute docs/js/api-config.js avec l’URL de ton API PHP avant de publier.');
 }
 writeFile($docsRoot . DIRECTORY_SEPARATOR . '.nojekyll', '');

@@ -76,17 +76,26 @@ backend/                 # à héberger séparément avec PHP
    autre site. Les cookies `None` exigent HTTPS ; les navigateurs qui bloquent
    les cookies tiers peuvent nécessiter un domaine personnalisé commun au site
    et à l’API.
-3. Remplace l’URL d’exemple dans `docs/js/api-config.js` par l’adresse HTTPS
-   réelle de `backend/api/index.php`.
-4. Génère le site statique :
+3. Dans **Settings → Secrets and variables → Actions → Variables**, crée la
+   variable de dépôt `TOPTRUMP_API_URL` avec l’adresse HTTPS réelle de
+   `backend/api/index.php` (par exemple
+   `https://api.example.com/backend/api/index.php`). Cette adresse n’est pas un
+   secret : elle est intégrée au JavaScript public du site.
+4. Dans **Settings → Pages**, choisis **GitHub Actions** comme source de
+   déploiement. Le workflow `.github/workflows/deploy-pages.yml` génère les
+   pages HTML et publie `docs/` à chaque push sur `main` (ou manuellement depuis
+   l’onglet **Actions**).
+5. Pour générer les pages localement, utilise :
 
    ```sh
    php scripts/build-github-pages.php
    ```
 
-5. Publie le dossier `docs/` sur GitHub, puis dans **Settings → Pages**, choisis
-   la branche principale et le dossier `/docs`.
+   La génération locale conserve `docs/js/api-config.js`. Pour définir ou
+   remplacer cette configuration depuis l’environnement, fournis
+   `TOPTRUMP_API_URL` avec une URL HTTPS valide.
 
-Le générateur rend les pages PHP actuelles en HTML et copie les ressources
-statiques. Il conserve `docs/js/api-config.js` afin que l’URL de l’API ne soit
-pas écrasée lors d’une nouvelle génération.
+Le workflow échoue si `TOPTRUMP_API_URL` n’est pas configurée. GitHub Pages ne
+peut pas exécuter PHP : l’API et le stockage JSON doivent donc rester sur un
+hébergement PHP distinct, configuré pour autoriser l’origine exacte de ton site
+GitHub Pages.
