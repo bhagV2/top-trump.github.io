@@ -141,7 +141,7 @@ function updateSelectionDisplay() {
   selectionCount.textContent = `${totalSelected} / 5 cartes sélectionnées`;
   startButton.disabled = totalSelected !== 5;
   startButton.textContent = totalSelected === 5
-    ? 'Chercher un adversaire'
+    ? 'Démarrer le duel contre l’ordinateur'
     : 'Choisir 5 cartes pour continuer';
 
   Array.from(cardsGrid.children).forEach(article => {
@@ -162,7 +162,7 @@ function updateSelectionDisplay() {
 async function startMatchmaking() {
   startButton.disabled = true;
   message.hidden = false;
-  message.textContent = 'Recherche d’un adversaire avec tes cinq cartes... Garde cette page ouverte.';
+  message.textContent = 'Préparation du duel contre l’ordinateur...';
 
   const cardIds = [];
   selectedCards.forEach((quantity, cardId) => {

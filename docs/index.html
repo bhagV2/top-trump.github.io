@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Top Trump - Accueil</title>
   <link rel="stylesheet" href="css/style.css">
-  <script src="js/api-config.js"></script>
+  <script src="js/static-api.js"></script>
   </head>
 <body>
   <header class="site-header">
@@ -21,6 +21,7 @@
       <a href="activity.html">Journal</a>
     </nav>
   </header>
+  <aside class="static-mode-notice" role="note">Mode GitHub Pages : les données restent dans ce navigateur. À chaque duel, l’ordinateur tire 5 cartes au hasard parmi 10.</aside>
   <main class="site-main">
 
 <div id="auth-box">
@@ -69,7 +70,7 @@
     <div>
       <span class="eyebrow">ESPACE JOUEUR</span>
       <h1>Bienvenue, <span id="pseudo-affiche"></span></h1>
-      <p>Ouvre un pack pour obtenir des cartes, puis lance une partie contre un adversaire.</p>
+      <p>Ouvre un pack pour obtenir des cartes, puis lance une partie contre l’ordinateur.</p>
     </div>
     <button class="button-secondary" id="logout-btn" type="button">Se déconnecter</button>
   </div>
@@ -83,7 +84,7 @@
     <button class="action-card action-card-featured" id="find-match-btn" type="button">
       <span class="action-icon" aria-hidden="true">⚔</span>
       <span class="action-title">Préparer un duel</span>
-      <span class="action-description">Choisis 5 cartes de ta collection avant de chercher un adversaire.</span>
+      <span class="action-description">Choisis 5 cartes de ta collection avant d’affronter l’ordinateur.</span>
     </button>
   </div>
 
