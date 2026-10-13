@@ -22,7 +22,7 @@
       <a href="activity.html">Journal</a>
     </nav>
   </header>
-  <aside class="static-mode-notice" role="note">Mode GitHub Pages : les données restent dans ce navigateur. À chaque duel, l’ordinateur tire 5 cartes au hasard parmi 10.</aside>
+  <aside class="static-mode-notice" role="note">Mode GitHub Pages : les données restent dans ce navigateur. À chaque duel, l’ordinateur reçoit 5 cartes tirées au hasard.</aside>
   <main class="site-main">
 
 <div class="game-toolbar">
@@ -43,6 +43,13 @@
     <h2 id="game-over-text" tabindex="-1"></h2>
     <p>Le premier joueur à 3 points remporte la partie.</p>
   </div>
+  <section id="reward-selection" class="reward-selection" aria-labelledby="reward-selection-title" hidden>
+    <h3 id="reward-selection-title">Choisis ta récompense</h3>
+    <p>Choisis une carte parmi les cinq cartes de l’ordinateur.</p>
+    <div id="reward-cards" class="reward-cards"></div>
+    <p id="reward-message" class="reward-message" role="status" aria-live="polite"></p>
+    <button id="claim-reward-btn" class="button-primary" type="button" disabled>Ajouter cette carte à ma collection</button>
+  </section>
   <div class="game-over-actions">
     <a class="button-primary game-home-link" href="index.html">Retour à l’accueil</a>
     <a class="button-secondary game-rematch-link" href="deck.html">Préparer un autre duel</a>

@@ -82,6 +82,7 @@ function activityIcon(eventType) {
     duel_won: '✓',
     duel_lost: '×',
     duel_surrendered: '!',
+    duel_reward: '✦',
   };
 
   return icons[eventType] || '•';
@@ -98,6 +99,7 @@ function activityTitle(eventType, details) {
     duel_won: `Duel gagné${details.opponent ? ` contre ${details.opponent}` : ''}`,
     duel_lost: `Duel perdu${details.opponent ? ` contre ${details.opponent}` : ''}`,
     duel_surrendered: `Duel abandonné${details.opponent ? ` contre ${details.opponent}` : ''}`,
+    duel_reward: `Carte obtenue après le duel · ${details.card || 'carte'}`,
   };
 
   if (eventType === 'duel_round') {

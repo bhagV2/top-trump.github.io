@@ -173,7 +173,20 @@
       }
       if (match.lastRound) response.last_round = match.lastRound;
     }
-    if (match.status === 'finished') response.winner_id = match.winnerId;
+    if (match.status === 'finished') {
+      response.winner_id = match.winnerId;
+      response.reward_claimed = Boolean(match.rewardClaimed);
+      if (match.winnerId === player.id && !match.rewardClaimed) {
+        response.reward_cards = (Array.isArray(match.computerPool) ? match.computerPool : [])
+          .map(id => catalog.find(card => card.id === id))
+          .filter(Boolean)
+          .map(card => ({
+            id: card.id,
+            name: card.name,
+            card_image_path: card.card_image_path,
+          }));
+      }
+    }
     return result(200, response);
   }
 
@@ -274,7 +287,7 @@
     const store = readStore();
     const player = currentPlayer(store);
 
-    if (options.method !== 'POST' && ['login', 'register', 'create_account', 'logout', 'open_pack', 'find_match', 'play_turn', 'surrender'].includes(action)) {
+    if (options.method !== 'POST' && ['login', 'register', 'create_account', 'logout', 'open_pack', 'find_match', 'play_turn', 'surrender', 'claim_reward'].includes(action)) {
       return failure(405, 'Cette action doit être envoyée en POST.');
     }
 
@@ -361,22 +374,19 @@
         return failure(400, 'Choisis exactement 5 cartes différentes que tu possèdes pour commencer le duel.');
       }
       const playerCardIds = ids.map(Number);
-      const computerPool = randomCardIds(catalog, 10, playerCardIds);
-      const computerHand = randomCardIds(
-        computerPool.map(id => ({ id })),
-        5
-      );
+      const computerHand = randomCardIds(catalog, 5, playerCardIds);
       const match = {
         id: store.nextMatchId++,
         playerId: player.id,
         playerHand: playerCardIds,
-        computerPool,
+        computerPool: computerHand.slice(),
         computerHand,
         status: 'in_progress',
         chooserId: player.id,
         playerScore: 0,
         computerScore: 0,
         winnerId: null,
+        rewardClaimed: false,
         lastRound: null,
       };
       store.matches.push(match);
@@ -386,6 +396,29 @@
     }
     if (route === 'match_status') {
       return matchStatus(store, catalog, matchById(store, requestUrl.searchParams.get('match_id')));
+    }
+    if (action === 'claim_reward') {
+      const match = matchById(store, body.match_id);
+      const cardId = Number(body.card_id);
+      if (!match || match.playerId !== player.id) return failure(404, 'Partie introuvable.');
+      if (match.status !== 'finished' || match.winnerId !== player.id) {
+        return failure(403, 'Seul le gagnant peut choisir une carte.');
+      }
+      if (match.rewardClaimed) return failure(409, 'La récompense de ce duel a déjà été choisie.');
+      if (!Array.isArray(match.computerPool) || !match.computerPool.includes(cardId)) {
+        return failure(400, 'Choisis une carte parmi celles de l’ordinateur.');
+      }
+
+      const card = catalog.find(item => item.id === cardId);
+      if (!card) return failure(404, 'Carte introuvable.');
+      addCard(store, player.id, card.id);
+      match.rewardClaimed = true;
+      activity(store, player.id, 'duel_reward', {
+        match_id: match.id,
+        card: card.name,
+      });
+      saveStore(store);
+      return result(200, { success: true, card });
     }
     if (action === 'play_turn') {
       const match = matchById(store, body.match_id);

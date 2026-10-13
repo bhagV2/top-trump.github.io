@@ -3,9 +3,10 @@
 Jeu de cartes statique publié sur GitHub Pages. Le site fonctionne sans serveur
 ni API PHP : les comptes, les collections et l’historique restent dans le
 navigateur utilisé. Les duels se jouent contre l’ordinateur ; à chaque partie,
-il reçoit dix cartes aléatoires et en tire cinq pour sa main. Les données ne
+il reçoit cinq cartes tirées au hasard. Les données ne
 sont pas partagées entre joueurs ou appareils et sont supprimées si les données
-du site sont effacées dans le navigateur.
+du site sont effacées dans le navigateur. Si tu gagnes un duel, tu peux choisir
+une carte parmi les cinq cartes tirées par l’ordinateur pour l’ajouter à ta collection.
 
 ## Développement local
 

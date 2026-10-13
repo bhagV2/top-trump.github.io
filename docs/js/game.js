@@ -12,6 +12,8 @@ let isPlayer1 = false;
 let player1Score = 0;
 let player2Score = 0;
 let pollingInterval = null;
+let rewardCards = [];
+let selectedRewardCardId = null;
 
 const ATTRIBUTE_LABELS = {
   force: 'Force',
@@ -25,6 +27,7 @@ document.querySelectorAll('.attr-btn').forEach(btn => {
   btn.addEventListener('click', () => playTurn(btn.dataset.attr));
 });
 document.getElementById('surrender-btn').addEventListener('click', surrenderMatch);
+document.getElementById('claim-reward-btn').addEventListener('click', claimReward);
 
 async function refreshStatus() {
   const res = await window.apiFetch(`${API_URL}?route=match_status&match_id=${encodeURIComponent(MATCH_ID)}`);
@@ -71,8 +74,10 @@ async function refreshStatus() {
   }
 
   if (data.status === 'finished') {
+    rewardCards = data.reward_cards || [];
+    selectedRewardCardId = null;
     clearInterval(pollingInterval);
-    showGameOver(data.winner_id);
+    showGameOver(data.winner_id, data.reward_claimed);
     return;
   }
 
@@ -309,7 +314,7 @@ function cardImageUrl(path) {
   return `assets/${safePath}`;
 }
 
-function showGameOver(winnerId) {
+function showGameOver(winnerId, rewardClaimed = false) {
   const gameOver = document.getElementById('game-over');
   if (!gameOver.hidden) {
     return;
@@ -333,11 +338,80 @@ function showGameOver(winnerId) {
     : 'Tu as perdu la partie.';
   const heading = document.getElementById('game-over-text');
   heading.textContent = text;
+  const rewardSelection = document.getElementById('reward-selection');
+  if (String(winnerId) === String(myPlayerId) && !rewardClaimed && rewardCards.length > 0) {
+    renderRewardChoices();
+    rewardSelection.hidden = false;
+  } else if (rewardClaimed) {
+    document.getElementById('reward-message').textContent = 'La carte choisie a été ajoutée à ta collection.';
+    rewardSelection.hidden = false;
+    document.getElementById('reward-cards').hidden = true;
+    document.getElementById('claim-reward-btn').hidden = true;
+  }
   const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ? 'auto'
     : 'smooth';
   gameOver.scrollIntoView({ behavior, block: 'center' });
   heading.focus({ preventScroll: true });
+}
+
+function renderRewardChoices() {
+  const choices = document.getElementById('reward-cards');
+  choices.replaceChildren();
+  choices.hidden = false;
+  document.getElementById('claim-reward-btn').hidden = false;
+  document.getElementById('claim-reward-btn').disabled = true;
+  document.getElementById('reward-message').textContent = '';
+
+  rewardCards.forEach(card => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'reward-card';
+    button.setAttribute('aria-pressed', 'false');
+    button.setAttribute('aria-label', `Choisir ${card.name}`);
+
+    const image = document.createElement('img');
+    image.src = cardImageUrl(card.card_image_path);
+    image.alt = '';
+    image.loading = 'lazy';
+
+    const name = document.createElement('span');
+    name.textContent = card.name;
+    button.append(image, name);
+    button.addEventListener('click', () => {
+      selectedRewardCardId = Number(card.id);
+      choices.querySelectorAll('.reward-card').forEach(choice => {
+        choice.setAttribute('aria-pressed', String(choice === button));
+      });
+      document.getElementById('claim-reward-btn').disabled = false;
+    });
+    choices.appendChild(button);
+  });
+}
+
+async function claimReward() {
+  const button = document.getElementById('claim-reward-btn');
+  const message = document.getElementById('reward-message');
+  if (selectedRewardCardId === null) return;
+
+  button.disabled = true;
+  message.textContent = 'Ajout de la carte...';
+  try {
+    const response = await window.apiFetch(`${API_URL}?action=claim_reward`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ match_id: MATCH_ID, card_id: selectedRewardCardId }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Impossible de récupérer cette carte.');
+
+    message.textContent = `${data.card.name} a été ajoutée à ta collection.`;
+    document.getElementById('reward-cards').hidden = true;
+    button.hidden = true;
+  } catch (error) {
+    message.textContent = error.message || 'Impossible de récupérer cette carte.';
+    button.disabled = false;
+  }
 }
 
 if (!MATCH_ID) {
