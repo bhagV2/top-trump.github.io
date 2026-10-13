@@ -1,0 +1,81 @@
+.duel-deck-page {
+  width: 100%;
+}
+
+.deck-selection-toolbar {
+  position: sticky;
+  top: 74px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.deck-selection-toolbar p {
+  margin: 0;
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.deck-selection-toolbar .button-primary {
+  width: auto;
+}
+
+.deck-selectable-card {
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.deck-card-selected {
+  border-color: rgba(240, 196, 91, 0.75);
+  box-shadow: 0 0 0 2px rgba(240, 196, 91, 0.12), 0 14px 32px rgba(0, 0, 0, 0.2);
+}
+
+.deck-owned-count {
+  margin: -6px 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.deck-card-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.deck-count-button {
+  width: 42px;
+  min-height: 40px;
+  padding: 4px;
+  font-size: 20px;
+}
+
+.deck-count-button:disabled {
+  opacity: 0.45;
+}
+
+.deck-card-count {
+  min-width: 28px;
+  color: var(--gold);
+  font-size: 19px;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (max-width: 580px) {
+  .deck-selection-toolbar {
+    top: 104px;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .deck-selection-toolbar .button-primary {
+    width: 100%;
+  }
+}

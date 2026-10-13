@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Choisir les cartes du duel - Top Trump</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api-config.js"></script>
+      <link rel="stylesheet" href="css/cards.css">
+      <link rel="stylesheet" href="css/deck.css">
+  </head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Top Trump, accueil">
+      <span class="brand-mark" aria-hidden="true">T</span>
+      <span class="brand-name">Top <strong>Trump</strong></span>
+    </a>
+    <nav class="site-nav" id="main-nav" aria-label="Navigation principale" hidden>
+      <a href="index.html">Accueil</a>
+      <a href="collection.html">Mes cartes</a>
+      <a href="cards.html">Toutes les cartes</a>
+      <a href="deck.html" aria-current="page">Préparer un duel</a>
+      <a href="activity.html">Journal</a>
+    </nav>
+  </header>
+  <main class="site-main">
+
+<section class="duel-deck-page" aria-labelledby="duel-deck-title">
+  <div class="cards-heading">
+    <div>
+      <span class="eyebrow">PRÉPARATION DU DUEL</span>
+      <h1 id="duel-deck-title">Choisis tes 5 cartes</h1>
+      <p>Choisis cinq cartes différentes de ta collection. Elles seront mélangées et jouées dans un ordre aléatoire.</p>
+    </div>
+    <a class="button-secondary cards-back-link" href="index.html">Retour à l’accueil</a>
+  </div>
+
+  <div class="deck-selection-toolbar">
+    <p id="deck-selection-count" role="status" aria-live="polite">Chargement de ta collection...</p>
+    <button id="start-duel-btn" class="button-primary" type="button" disabled>Choisir 5 cartes pour continuer</button>
+  </div>
+
+  <p id="deck-selection-message" class="collection-empty" role="status" aria-live="polite"></p>
+  <div id="deck-cards-grid" class="cards-grid"></div>
+</section>
+
+<script src="js/deck-selection.js?v=20261006-4"></script>
+  </main>
+  <footer class="site-footer">
+    <span class="footer-mark" aria-hidden="true">T</span>
+    <p>Top Trump <span>·</span> À toi de jouer.</p>
+  </footer>
+  <script src="js/header.js" defer></script>
+</body>
+</html>

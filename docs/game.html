@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Top Trump - Partie</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api-config.js"></script>
+      <link rel="stylesheet" href="css/game.css">
+  </head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Top Trump, accueil">
+      <span class="brand-mark" aria-hidden="true">T</span>
+      <span class="brand-name">Top <strong>Trump</strong></span>
+    </a>
+    <nav class="site-nav" id="main-nav" aria-label="Navigation principale" hidden>
+      <a href="index.html">Accueil</a>
+      <a href="collection.html">Mes cartes</a>
+      <a href="cards.html">Toutes les cartes</a>
+      <a href="deck.html">Préparer un duel</a>
+      <a href="activity.html">Journal</a>
+    </nav>
+  </header>
+  <main class="site-main">
+
+<div class="game-toolbar">
+  <div>
+    <span class="eyebrow">DUEL EN COURS</span>
+    <h1 class="game-title">Le duel</h1>
+  </div>
+  <div class="game-toolbar-actions">
+    <button class="button-danger" id="surrender-btn" type="button">Abandonner le duel</button>
+  </div>
+</div>
+
+<p class="page-help duel-help">Premier à 3 points : chaque manche remportée rapporte 1 point et met les cartes jouées de côté. En cas d’égalité, personne ne marque et les cartes restent dans les piles. Garde un œil sur le score : un point peut suffire à conclure le duel !</p>
+
+<section id="game-over" class="game-over-panel" aria-live="polite" hidden>
+  <div>
+    <span class="eyebrow">FIN DU DUEL</span>
+    <h2 id="game-over-text" tabindex="-1"></h2>
+    <p>Le premier joueur à 3 points remporte la partie.</p>
+  </div>
+  <div class="game-over-actions">
+    <a class="button-primary game-home-link" href="index.html">Retour à l’accueil</a>
+    <a class="button-secondary game-rematch-link" href="deck.html">Préparer un autre duel</a>
+  </div>
+</section>
+
+<section id="duel-arena" class="duel-arena" aria-label="Cartes du duel">
+  <section id="scoreboard" class="duel-scoreboard" aria-label="Joueurs et cartes restantes">
+    <article id="player1-score" class="score-box">
+      <span class="player-label">JOUEUR 1</span>
+      <span id="p1-pseudo" class="player-name">En attente</span>
+      <span id="p1-score-track" class="score-track" role="img" aria-label="0 point sur 3">
+        <span class="score-pip"></span><span class="score-pip"></span><span class="score-pip"></span>
+      </span>
+      <span class="count"><span id="p1-count">0</span><small>cartes</small></span>
+    </article>
+    <span id="scoreboard-vs" class="vs" aria-hidden="true">VS</span>
+    <article id="player2-score" class="score-box">
+      <span class="player-label">JOUEUR 2</span>
+      <span id="p2-pseudo" class="player-name">En attente</span>
+      <span id="p2-score-track" class="score-track" role="img" aria-label="0 point sur 3">
+        <span class="score-pip"></span><span class="score-pip"></span><span class="score-pip"></span>
+      </span>
+      <span class="count"><span id="p2-count">0</span><small>cartes</small></span>
+    </article>
+  </section>
+
+  <article id="player1-panel" class="duel-card-panel">
+    <div id="player1-card" class="duel-card-slot" aria-live="polite">
+      <p class="card-placeholder">La carte apparaîtra ici au début du duel.</p>
+    </div>
+  </article>
+  <div id="arena-vs" class="arena-vs" aria-hidden="true">VS</div>
+  <article id="player2-panel" class="duel-card-panel">
+    <div id="player2-card" class="duel-card-slot" aria-live="polite">
+      <p class="card-placeholder">En attente de l’adversaire.</p>
+    </div>
+  </article>
+
+  <section id="round-result" aria-live="polite" hidden></section>
+</section>
+
+<div id="turn-info" class="turn-banner" role="status" aria-live="polite">Connexion à la partie...</div>
+
+<section id="attribute-choice" hidden>
+  <div class="section-heading">
+    <span class="eyebrow">À TOI DE CHOISIR</span>
+    <h2>Choisis une caractéristique</h2>
+    <p class="section-description">Sélectionne celle où tu penses que ta carte aura la meilleure note.</p>
+  </div>
+  <button class="attr-btn" type="button" data-attr="force">Force</button>
+  <button class="attr-btn" type="button" data-attr="vitesse">Vitesse</button>
+  <button class="attr-btn" type="button" data-attr="taille">Taille</button>
+  <button class="attr-btn" type="button" data-attr="dangerosite">Dangerosité</button>
+  <button class="attr-btn" type="button" data-attr="intelligence">Intelligence</button>
+</section>
+<script src="js/game.js?v=20261013-1"></script>
+
+  </main>
+  <footer class="site-footer">
+    <span class="footer-mark" aria-hidden="true">T</span>
+    <p>Top Trump <span>·</span> À toi de jouer.</p>
+  </footer>
+  <script src="js/header.js" defer></script>
+</body>
+</html>

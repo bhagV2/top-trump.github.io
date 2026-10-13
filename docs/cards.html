@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Toutes les cartes - Top Trump</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api-config.js"></script>
+      <link rel="stylesheet" href="css/cards.css">
+  </head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Top Trump, accueil">
+      <span class="brand-mark" aria-hidden="true">T</span>
+      <span class="brand-name">Top <strong>Trump</strong></span>
+    </a>
+    <nav class="site-nav" id="main-nav" aria-label="Navigation principale" hidden>
+      <a href="index.html">Accueil</a>
+      <a href="collection.html">Mes cartes</a>
+      <a href="cards.html" aria-current="page">Toutes les cartes</a>
+      <a href="deck.html">Préparer un duel</a>
+      <a href="activity.html">Journal</a>
+    </nav>
+  </header>
+  <main class="site-main">
+
+<section class="cards-page" aria-labelledby="cards-title">
+  <div class="cards-heading">
+    <div>
+      <span class="eyebrow">LE CATALOGUE</span>
+      <h1 id="cards-title">Toutes les cartes</h1>
+      <p id="cards-description">Chargement du catalogue...</p>
+    </div>
+    <a class="button-secondary cards-back-link" href="index.html">Retour à l’accueil</a>
+  </div>
+  <p class="page-help">Les notes vont de 20 à 100. Pendant un duel, choisis une caractéristique : la note la plus élevée remporte la manche.</p>
+  <p id="cards-message" class="collection-empty" role="status" aria-live="polite"></p>
+  <div id="cards-grid" class="cards-grid"></div>
+</section>
+
+<script src="js/cards.js?v=20261006-1"></script>
+  </main>
+  <footer class="site-footer">
+    <span class="footer-mark" aria-hidden="true">T</span>
+    <p>Top Trump <span>·</span> À toi de jouer.</p>
+  </footer>
+  <script src="js/header.js" defer></script>
+</body>
+</html>

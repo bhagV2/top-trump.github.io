@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Journal d’activité - Top Trump</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api-config.js"></script>
+      <link rel="stylesheet" href="css/activity.css">
+  </head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Top Trump, accueil">
+      <span class="brand-mark" aria-hidden="true">T</span>
+      <span class="brand-name">Top <strong>Trump</strong></span>
+    </a>
+    <nav class="site-nav" id="main-nav" aria-label="Navigation principale" hidden>
+      <a href="index.html">Accueil</a>
+      <a href="collection.html">Mes cartes</a>
+      <a href="cards.html">Toutes les cartes</a>
+      <a href="deck.html">Préparer un duel</a>
+      <a href="activity.html" aria-current="page">Journal</a>
+    </nav>
+  </header>
+  <main class="site-main">
+
+<section class="activity-page" aria-labelledby="activity-title">
+  <div class="cards-heading">
+    <div>
+      <span class="eyebrow">TON HISTORIQUE</span>
+      <h1 id="activity-title">Journal d’activité</h1>
+      <p>Retrouve ici tes connexions, les cartes obtenues et le déroulement de tes duels.</p>
+    </div>
+    <a class="button-secondary cards-back-link" href="index.html">Retour à l’accueil</a>
+  </div>
+
+  <p id="activity-status" class="collection-empty" role="status" aria-live="polite">Chargement de ton journal...</p>
+  <ol id="activity-list" class="activity-list" aria-label="Activités récentes"></ol>
+</section>
+
+<script src="js/activity.js"></script>
+  </main>
+  <footer class="site-footer">
+    <span class="footer-mark" aria-hidden="true">T</span>
+    <p>Top Trump <span>·</span> À toi de jouer.</p>
+  </footer>
+  <script src="js/header.js" defer></script>
+</body>
+</html>
