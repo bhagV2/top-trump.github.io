@@ -186,6 +186,22 @@
             card_image_path: card.card_image_path,
           }));
       }
+      if (match.winnerId !== player.id) {
+        response.stolen_cards = (Array.isArray(match.stolenCards) ? match.stolenCards : [])
+          .map(id => catalog.find(card => card.id === id))
+          .filter(Boolean)
+          .map(card => ({
+            id: card.id,
+            name: card.name,
+            card_image_path: card.card_image_path,
+          }));
+        if (response.stolen_cards.length === 0 && match.lastRound?.winner_id === 0) {
+          response.stolen_cards = [{
+            name: match.lastRound.player1_name,
+            card_image_path: match.lastRound.player1_image,
+          }];
+        }
+      }
     }
     return result(200, response);
   }
@@ -210,6 +226,7 @@
         match.playerScore++;
       } else {
         removeCard(store, match.playerId, playerCard.id);
+        match.stolenCards = [...(match.stolenCards || []), playerCard.id];
         match.computerScore++;
       }
     }
@@ -220,6 +237,7 @@
       player1_value: playerValue,
       player2_value: computerValue,
       winner_id: winnerId,
+      player1_card_id: playerCard.id,
       at: new Date().toISOString(),
       player1_name: playerCard.name,
       player1_image: playerCard.card_image_path,
@@ -387,6 +405,7 @@
         computerScore: 0,
         winnerId: null,
         rewardClaimed: false,
+        stolenCards: [],
         lastRound: null,
       };
       store.matches.push(match);
@@ -443,10 +462,19 @@
       if (!match || match.playerId !== player.id) return failure(404, 'Partie introuvable.');
       if (match.status !== 'in_progress') return failure(400, 'Cette partie ne peut plus être abandonnée.');
       const cardsLost = match.playerHand.length;
+      match.stolenCards = [...(match.stolenCards || []), ...match.playerHand];
       match.playerHand.forEach(cardId => removeCard(store, player.id, cardId));
       match.playerHand = [];
       match.status = 'finished';
       match.winnerId = 0;
+      const stolenCards = match.stolenCards
+        .map(id => catalog.find(card => card.id === id))
+        .filter(Boolean)
+        .map(card => ({
+          id: card.id,
+          name: card.name,
+          card_image_path: card.card_image_path,
+        }));
       activity(store, player.id, 'duel_surrendered', {
         match_id: match.id,
         opponent: 'Ordinateur',
@@ -454,7 +482,7 @@
       });
       activity(store, player.id, 'duel_lost', { match_id: match.id, opponent: 'Ordinateur', by_surrender: true });
       saveStore(store);
-      return result(200, { success: true, winner_id: 0, forfeited_player_id: player.id });
+      return result(200, { success: true, winner_id: 0, forfeited_player_id: player.id, stolen_cards: stolenCards });
     }
     return failure(404, 'Route ou action introuvable.');
   }

@@ -14,6 +14,7 @@ let player2Score = 0;
 let pollingInterval = null;
 let rewardCards = [];
 let selectedRewardCardId = null;
+let stolenCards = [];
 
 const ATTRIBUTE_LABELS = {
   force: 'Force',
@@ -75,9 +76,10 @@ async function refreshStatus() {
 
   if (data.status === 'finished') {
     rewardCards = data.reward_cards || [];
+    stolenCards = data.stolen_cards || [];
     selectedRewardCardId = null;
     clearInterval(pollingInterval);
-    showGameOver(data.winner_id, data.reward_claimed);
+    showGameOver(data.winner_id, data.reward_claimed, stolenCards);
     return;
   }
 
@@ -198,7 +200,7 @@ async function surrenderMatch() {
       clearInterval(pollingInterval);
       pollingInterval = null;
     }
-    showGameOver(data.winner_id);
+    showGameOver(data.winner_id, false, data.stolen_cards || []);
   } catch (error) {
     document.getElementById('turn-info').textContent = 'Impossible de contacter le serveur pour abandonner.';
   } finally {
@@ -314,7 +316,7 @@ function cardImageUrl(path) {
   return `assets/${safePath}`;
 }
 
-function showGameOver(winnerId, rewardClaimed = false) {
+function showGameOver(winnerId, rewardClaimed = false, cardsLost = []) {
   const gameOver = document.getElementById('game-over');
   if (!gameOver.hidden) {
     return;
@@ -348,11 +350,35 @@ function showGameOver(winnerId, rewardClaimed = false) {
     document.getElementById('reward-cards').hidden = true;
     document.getElementById('claim-reward-btn').hidden = true;
   }
+  if (String(winnerId) !== String(myPlayerId) && cardsLost.length > 0) {
+    renderStolenCards(cardsLost);
+  }
   const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ? 'auto'
     : 'smooth';
   gameOver.scrollIntoView({ behavior, block: 'center' });
   heading.focus({ preventScroll: true });
+}
+
+function renderStolenCards(cards) {
+  const summary = document.getElementById('loss-summary');
+  const container = document.getElementById('stolen-cards');
+  container.replaceChildren();
+
+  cards.forEach(card => {
+    const figure = document.createElement('figure');
+    figure.className = 'stolen-card';
+    const image = document.createElement('img');
+    image.src = cardImageUrl(card.card_image_path);
+    image.alt = card.name;
+    image.loading = 'lazy';
+    const caption = document.createElement('figcaption');
+    caption.textContent = card.name;
+    figure.append(image, caption);
+    container.appendChild(figure);
+  });
+
+  summary.hidden = false;
 }
 
 function renderRewardChoices() {

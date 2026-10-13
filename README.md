@@ -6,7 +6,9 @@ navigateur utilisé. Les duels se jouent contre l’ordinateur ; à chaque parti
 il reçoit cinq cartes tirées au hasard. Les données ne
 sont pas partagées entre joueurs ou appareils et sont supprimées si les données
 du site sont effacées dans le navigateur. Si tu gagnes un duel, tu peux choisir
-une carte parmi les cinq cartes tirées par l’ordinateur pour l’ajouter à ta collection.
+une carte parmi les cinq cartes tirées par l’ordinateur pour l’ajouter à ta
+collection. À la fin d’un duel perdu, les cartes remportées par l’ordinateur
+sont affichées dans le récapitulatif.
 
 ## Développement local
 
