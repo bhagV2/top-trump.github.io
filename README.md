@@ -17,6 +17,9 @@ persistants, qui récompensent chacun d’un pack bonus, ainsi que des badges li
 à la collection. Les objectifs comptent les victoires, les manches remportées
 et les cartes différentes découvertes. Les packs bonus ignorent le délai
 habituel de 20 minutes ; la progression est enregistrée dans le navigateur.
+Pendant la préparation d’un duel, un bouton peut aussi choisir les cinq cartes
+possédées avec le meilleur total de caractéristiques ; cette sélection reste
+modifiable avant de lancer la partie.
 
 ## Développement local
 

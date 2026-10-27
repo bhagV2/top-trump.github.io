@@ -35,6 +35,7 @@
 
   let currentStep = null;
   let target = null;
+  let arrowTarget = null;
   let finishing = false;
   let initialized = false;
   let initializing = false;
@@ -131,6 +132,7 @@
       initialized = true;
       currentStep = config;
       target = element;
+      arrowTarget = element;
       const guide = createGuide();
       guide.backdrop.hidden = false;
       guide.arrow.hidden = false;
@@ -220,14 +222,20 @@
     if (!progress || !title || !description) return;
 
     const readyToStart = selectedCount === 5;
-    const nextTarget = document.querySelector(readyToStart
+    const highlightTarget = document.querySelector(readyToStart
       ? '#deck-selection-toolbar'
-      : '#deck-cards-grid .deck-count-button[aria-label^="Ajouter"]:not(:disabled)');
-    if (!nextTarget) return;
+      : '#deck-cards-grid');
+    const nextAddButton = document.querySelector(
+      '#deck-cards-grid .deck-count-button[aria-label^="Ajouter"]:not(:disabled)'
+    );
+    if (!highlightTarget || (!readyToStart && !nextAddButton)) return;
 
     target?.classList.remove('onboarding-highlight');
-    target = nextTarget;
+    target = highlightTarget;
     target.classList.add('onboarding-highlight');
+    arrowTarget = readyToStart
+      ? document.getElementById('start-duel-btn')
+      : nextAddButton;
     progress.textContent = readyToStart
       ? 'BIENVENUE · ÉTAPE 4 SUR 4 · TA MAIN EST PRÊTE'
       : 'BIENVENUE · ÉTAPE 4 SUR 4 · COMPOSE TA MAIN';
@@ -259,6 +267,7 @@
   function closeGuide() {
     target?.classList.remove('onboarding-highlight');
     target = null;
+    arrowTarget = null;
     document.querySelectorAll('.onboarding-backdrop, .onboarding-arrow, .onboarding-dialog')
       .forEach(element => element.remove());
     window.removeEventListener('resize', positionGuide);
@@ -294,7 +303,7 @@
     const arrow = document.querySelector('.onboarding-arrow');
     if (!dialog || !arrow) return;
 
-    const rect = target.getBoundingClientRect();
+    const rect = (arrowTarget || target).getBoundingClientRect();
     const width = window.innerWidth;
     const height = window.innerHeight;
     const dialogWidth = dialog.offsetWidth;

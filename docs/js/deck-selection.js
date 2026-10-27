@@ -7,8 +7,10 @@ const cardsGrid = document.getElementById('deck-cards-grid');
 const selectionCount = document.getElementById('deck-selection-count');
 const message = document.getElementById('deck-selection-message');
 const startButton = document.getElementById('start-duel-btn');
+const recommendButton = document.getElementById('recommend-cards-btn');
 
 startButton.addEventListener('click', startMatchmaking);
+recommendButton.addEventListener('click', chooseRecommendedCards);
 
 async function readApiResponse(response) {
   const body = await response.text();
@@ -39,6 +41,7 @@ async function loadCollection() {
 
     availableCards = data.cards;
     cardsGrid.replaceChildren();
+    recommendButton.disabled = availableCards.length < 5;
 
     if (availableCards.length === 0) {
       message.hidden = false;
@@ -54,6 +57,31 @@ async function loadCollection() {
     message.textContent = error.message || 'Impossible de charger ta collection.';
     selectionCount.textContent = '';
   }
+}
+
+function chooseRecommendedCards() {
+  const recommendedCards = availableCards
+    .map(card => ({
+      card,
+      score: ['force', 'vitesse', 'taille', 'dangerosite', 'intelligence']
+        .reduce((total, attribute) => total + Number(card[attribute] || 0), 0),
+    }))
+    .sort((left, right) => (
+      right.score - left.score || left.card.name.localeCompare(right.card.name)
+    ))
+    .slice(0, 5);
+
+  if (recommendedCards.length < 5) {
+    message.hidden = false;
+    message.textContent = 'Il faut au moins cinq cartes différentes dans ta collection pour préparer un duel.';
+    return;
+  }
+
+  selectedCards.clear();
+  recommendedCards.forEach(({ card }) => selectedCards.set(Number(card.id), 1));
+  message.hidden = false;
+  message.textContent = 'Les cinq cartes recommandées ont été sélectionnées. Tu peux modifier ta main avant le duel.';
+  updateSelectionDisplay();
 }
 
 function createSelectableCard(card) {

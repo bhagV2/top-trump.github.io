@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261027-progress">
   <script src="js/static-api.js?v=20261027-progression"></script>
       <link rel="stylesheet" href="css/cards.css">
-      <link rel="stylesheet" href="css/deck.css">
+      <link rel="stylesheet" href="css/deck.css?v=20261027-recommended-cards">
   </head>
 <body>
   <header class="site-header">
@@ -38,15 +38,19 @@
 
   <div id="deck-selection-toolbar" class="deck-selection-toolbar">
     <p id="deck-selection-count" role="status" aria-live="polite" aria-label="Chargement de ta main">Chargement de ta collection...</p>
-    <button id="start-duel-btn" class="button-primary" type="button" disabled>Choisir 5 cartes pour continuer</button>
+    <div class="deck-toolbar-actions">
+      <button id="recommend-cards-btn" class="button-secondary" type="button" disabled>Choisir les cartes recommandées</button>
+      <button id="start-duel-btn" class="button-primary" type="button" disabled>Choisir 5 cartes pour continuer</button>
+    </div>
   </div>
+  <p class="deck-recommendation-help">La recommandation sélectionne les cinq cartes que tu possèdes avec le meilleur total de caractéristiques. Tu peux ensuite modifier ta main.</p>
 
   <p id="deck-selection-message" class="collection-empty" role="status" aria-live="polite"></p>
   <div id="deck-cards-grid" class="cards-grid"></div>
 </section>
 
-<script src="js/onboarding.js?v=20261027-deck-guide-2"></script>
-<script src="js/deck-selection.js?v=20261027-deck-guide"></script>
+<script src="js/onboarding.js?v=20261027-deck-guide-3"></script>
+<script src="js/deck-selection.js?v=20261027-recommended-cards"></script>
   </main>
   <footer class="site-footer">
     <span class="footer-mark" aria-hidden="true">T</span>

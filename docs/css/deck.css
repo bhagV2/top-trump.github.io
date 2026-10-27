@@ -23,8 +23,22 @@
   font-weight: 800;
 }
 
-.deck-selection-toolbar .button-primary {
+.deck-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.deck-toolbar-actions button {
   width: auto;
+}
+
+.deck-recommendation-help {
+  margin: -7px 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .deck-selectable-card {
@@ -75,7 +89,11 @@
     flex-direction: column;
   }
 
-  .deck-selection-toolbar .button-primary {
+  .deck-toolbar-actions {
+    flex-direction: column;
+  }
+
+  .deck-toolbar-actions button {
     width: 100%;
   }
 }
