@@ -27,9 +27,9 @@
     },
     'deck.html': {
       step: 'deck',
-      selector: '#deck-cards-grid .deck-card-controls',
+      selector: '#deck-cards-grid .deck-count-button[aria-label^="Ajouter"]:not(:disabled)',
       title: 'Compose ta main',
-      description: 'Pour préparer ta main, clique sur le bouton + de cinq cartes différentes. Le compteur en haut t’indique combien il t’en reste à choisir.',
+      description: 'Clique sur ce bouton + pour ajouter cette carte à ta main. Continue avec quatre autres cartes différentes ; le compteur t’indique ta sélection.',
     },
   };
 
@@ -222,7 +222,7 @@
     const readyToStart = selectedCount === 5;
     const nextTarget = document.querySelector(readyToStart
       ? '#deck-selection-toolbar'
-      : '#deck-cards-grid .deck-card-controls');
+      : '#deck-cards-grid .deck-count-button[aria-label^="Ajouter"]:not(:disabled)');
     if (!nextTarget) return;
 
     target?.classList.remove('onboarding-highlight');
@@ -236,7 +236,7 @@
       : 'Compose ta main';
     description.textContent = readyToStart
       ? 'Ta main est prête. Vérifie le compteur, puis clique sur « Démarrer le duel contre l’ordinateur ».'
-      : 'Pour préparer ta main, clique sur le bouton + de cinq cartes différentes. Le compteur en haut t’indique combien il t’en reste à choisir.';
+      : `Clique sur ce bouton + pour ajouter cette carte à ta main. Continue avec ${5 - selectedCount} autre${5 - selectedCount === 1 ? '' : 's'} carte${5 - selectedCount === 1 ? '' : 's'} différente${5 - selectedCount === 1 ? '' : 's'} ; le compteur t’indique ta sélection.`;
     positionGuide();
   }
 
