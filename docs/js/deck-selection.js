@@ -96,7 +96,7 @@ function createSelectableCard(card) {
   increaseButton.type = 'button';
   increaseButton.className = 'button-secondary deck-count-button';
   increaseButton.textContent = '+';
-  increaseButton.setAttribute('aria-label', `Ajouter un exemplaire de ${card.name}`);
+  increaseButton.setAttribute('aria-label', `Ajouter ${card.name} à ma main`);
 
   decreaseButton.addEventListener('click', () => changeSelectedCount(card, -1));
   increaseButton.addEventListener('click', () => changeSelectedCount(card, 1));
@@ -139,6 +139,7 @@ function getSelectedCardCount() {
 function updateSelectionDisplay() {
   const totalSelected = getSelectedCardCount();
   selectionCount.textContent = `${totalSelected} / 5 cartes sélectionnées`;
+  selectionCount.setAttribute('aria-label', `${totalSelected} cartes dans ta main sur 5`);
   startButton.disabled = totalSelected !== 5;
   startButton.textContent = totalSelected === 5
     ? 'Démarrer le duel contre l’ordinateur'
@@ -157,6 +158,10 @@ function updateSelectionDisplay() {
     article.deckIncreaseButton.disabled = selectedCount === 1 || totalSelected >= 5;
     article.classList.toggle('deck-card-selected', selectedCount > 0);
   });
+
+  window.dispatchEvent(new CustomEvent('toptrump:deck-selection-changed', {
+    detail: { selectedCount: totalSelected },
+  }));
 }
 
 async function startMatchmaking() {

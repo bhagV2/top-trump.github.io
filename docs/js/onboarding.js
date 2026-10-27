@@ -27,9 +27,9 @@
     },
     'deck.html': {
       step: 'deck',
-      selector: '#deck-selection-toolbar',
-      title: 'Lance ton premier duel',
-      description: 'Sélectionne cinq cartes différentes dans ta collection, puis clique sur « Démarrer le duel contre l’ordinateur ».',
+      selector: '#deck-cards-grid .deck-card-controls',
+      title: 'Compose ta main',
+      description: 'Pour préparer ta main, clique sur le bouton + de cinq cartes différentes. Le compteur en haut t’indique combien il t’en reste à choisir.',
     },
   };
 
@@ -78,6 +78,7 @@
     window.addEventListener('resize', positionGuide);
     window.addEventListener('scroll', positionGuide, true);
     window.addEventListener('toptrump:pack-opened', handlePackOpened);
+    window.addEventListener('toptrump:deck-selection-changed', handleDeckSelectionChanged);
     return { backdrop, arrow, dialog };
   }
 
@@ -141,6 +142,13 @@
         : `BIENVENUE · ÉTAPE ${['open_pack', 'collection', 'catalog', 'deck'].indexOf(config.step) + 1} SUR 4`;
       document.getElementById('onboarding-title').textContent = config.title;
       document.getElementById('onboarding-description').textContent = config.description;
+      if (config.step === 'deck') {
+        const selectedCount = Number.parseInt(
+          document.getElementById('deck-selection-count').textContent,
+          10
+        ) || 0;
+        updateDeckGuide(selectedCount);
+      }
 
       const next = document.getElementById('onboarding-next');
       if (config.step === 'open_pack') {
@@ -200,6 +208,38 @@
     window.location.href = 'collection.html';
   }
 
+  function handleDeckSelectionChanged(event) {
+    if (currentStep?.step !== 'deck') return;
+    updateDeckGuide(Number(event.detail?.selectedCount));
+  }
+
+  function updateDeckGuide(selectedCount) {
+    const progress = document.getElementById('onboarding-progress');
+    const title = document.getElementById('onboarding-title');
+    const description = document.getElementById('onboarding-description');
+    if (!progress || !title || !description) return;
+
+    const readyToStart = selectedCount === 5;
+    const nextTarget = document.querySelector(readyToStart
+      ? '#deck-selection-toolbar'
+      : '#deck-cards-grid .deck-card-controls');
+    if (!nextTarget) return;
+
+    target?.classList.remove('onboarding-highlight');
+    target = nextTarget;
+    target.classList.add('onboarding-highlight');
+    progress.textContent = readyToStart
+      ? 'BIENVENUE · ÉTAPE 4 SUR 4 · TA MAIN EST PRÊTE'
+      : 'BIENVENUE · ÉTAPE 4 SUR 4 · COMPOSE TA MAIN';
+    title.textContent = readyToStart
+      ? 'Tes cinq cartes sont choisies !'
+      : 'Compose ta main';
+    description.textContent = readyToStart
+      ? 'Ta main est prête. Vérifie le compteur, puis clique sur « Démarrer le duel contre l’ordinateur ».'
+      : 'Pour préparer ta main, clique sur le bouton + de cinq cartes différentes. Le compteur en haut t’indique combien il t’en reste à choisir.';
+    positionGuide();
+  }
+
   async function saveStep(step) {
     if (finishing) return;
     finishing = true;
@@ -224,6 +264,7 @@
     window.removeEventListener('resize', positionGuide);
     window.removeEventListener('scroll', positionGuide, true);
     window.removeEventListener('toptrump:pack-opened', handlePackOpened);
+    window.removeEventListener('toptrump:deck-selection-changed', handleDeckSelectionChanged);
     document.removeEventListener('keydown', handleKeydown);
   }
 
