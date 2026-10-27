@@ -6,9 +6,16 @@ navigateur utilisé. Les duels se jouent contre l’ordinateur ; à chaque parti
 il reçoit cinq cartes tirées au hasard. Les données ne
 sont pas partagées entre joueurs ou appareils et sont supprimées si les données
 du site sont effacées dans le navigateur. Si tu gagnes un duel, tu peux choisir
-une carte parmi les cinq cartes tirées par l’ordinateur pour l’ajouter à ta
-collection. À la fin d’un duel perdu, les cartes remportées par l’ordinateur
-sont affichées dans le récapitulatif.
+une seule carte parmi les cinq cartes tirées par l’ordinateur pour l’ajouter à
+ta collection. À la création du compte, un guide avec des repères visuels
+accompagne l’ouverture du premier pack, la visite de la collection et du
+catalogue, puis la préparation du premier duel. Le tutoriel du duel présente
+ensuite le score, le choix des caractéristiques et le vol d’une carte par le
+gagnant. Le tableau de bord suit une mission quotidienne et trois objectifs
+persistants, qui récompensent chacun d’un pack bonus, ainsi que des badges liés
+à la collection. Les objectifs comptent les victoires, les manches remportées
+et les cartes différentes découvertes. Les packs bonus ignorent le délai
+habituel de 20 minutes ; la progression est enregistrée dans le navigateur.
 
 ## Développement local
 

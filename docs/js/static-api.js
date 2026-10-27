@@ -93,6 +93,26 @@
     return store.players.find(player => player.id === store.currentPlayerId) || null;
   }
 
+  function ensureProgressState(player) {
+    let changed = false;
+    if (!Number.isInteger(player.bonusPacks) || player.bonusPacks < 0) {
+      player.bonusPacks = 0;
+      changed = true;
+    }
+    if (!player.missionClaims || typeof player.missionClaims !== 'object') {
+      player.missionClaims = {};
+      changed = true;
+    }
+    return changed;
+  }
+
+  function localDayKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   function ownedCards(store, catalog, playerId) {
     const quantities = store.collections[String(playerId)] || {};
     return catalog
@@ -101,18 +121,62 @@
       .sort((left, right) => left.name.localeCompare(right.name));
   }
 
+  function playerProgress(store, catalog, player) {
+    const logs = store.activityLogs.filter(log => log.player_id === player.id);
+    const today = localDayKey(new Date());
+    const wins = logs.filter(log => log.event_type === 'duel_won').length;
+    const wonRounds = logs.filter(log => (
+      log.event_type === 'duel_round' && log.details.result === 'won'
+    )).length;
+    const wonRoundsToday = logs.filter(log => (
+      log.event_type === 'duel_round'
+      && log.details.result === 'won'
+      && typeof log.created_at === 'string'
+      && localDayKey(new Date(`${log.created_at.replace(' ', 'T')}Z`)) === today
+    )).length;
+    const uniqueCards = ownedCards(store, catalog, player.id).length;
+    const missions = [
+      {
+        id: 'daily-round',
+        claim_key: `daily-round-${today}`,
+        title: 'Remporter une manche aujourd’hui',
+        goal: 1,
+        progress: wonRoundsToday,
+        daily: true,
+      },
+      { id: 'first-victory', title: 'Remporter un duel', goal: 1, progress: wins },
+      { id: 'round-winner', title: 'Remporter 3 manches', goal: 3, progress: wonRounds },
+      { id: 'collector', title: 'Découvrir 10 cartes', goal: 10, progress: uniqueCards },
+    ].map(mission => ({
+      ...mission,
+      progress: Math.min(mission.progress, mission.goal),
+      completed: mission.progress >= mission.goal,
+      claimed: Boolean(player.missionClaims[mission.claim_key || mission.id]),
+    })).map(mission => ({
+      ...mission,
+      can_claim: mission.completed && !mission.claimed,
+    }));
+    const badges = [
+      { id: 'first-five', title: 'Première collection', goal: Math.min(5, catalog.length) },
+      { id: 'ten-cards', title: 'Collection variée', goal: Math.min(10, catalog.length) },
+      { id: 'complete-collection', title: 'Collection complète', goal: catalog.length },
+    ].map(badge => ({
+      ...badge,
+      earned: uniqueCards >= badge.goal,
+    }));
+    return {
+      unique_cards: uniqueCards,
+      total_cards: catalog.length,
+      bonus_packs: player.bonusPacks,
+      missions,
+      badges,
+    };
+  }
+
   function addCard(store, playerId, cardId) {
     const collection = store.collections[String(playerId)] || (store.collections[String(playerId)] = {});
     const key = String(cardId);
     collection[key] = Number(collection[key] || 0) + 1;
-  }
-
-  function removeCard(store, playerId, cardId) {
-    const collection = store.collections[String(playerId)] || {};
-    const key = String(cardId);
-    const quantity = Number(collection[key] || 0);
-    if (quantity <= 1) delete collection[key];
-    else collection[key] = quantity - 1;
   }
 
   async function passwordHash(password, salt) {
@@ -151,6 +215,7 @@
       player1_id: player.id,
       player2_id: 0,
     };
+    response.tutorial_pending = Boolean(match.tutorialPending && !player.tutorialCompleted);
     if (match.status === 'in_progress' || match.status === 'finished') {
       response.current_turn_player_id = match.chooserId;
       response.attribute_chooser_id = match.chooserId;
@@ -186,22 +251,6 @@
             card_image_path: card.card_image_path,
           }));
       }
-      if (match.winnerId !== player.id) {
-        response.stolen_cards = (Array.isArray(match.stolenCards) ? match.stolenCards : [])
-          .map(id => catalog.find(card => card.id === id))
-          .filter(Boolean)
-          .map(card => ({
-            id: card.id,
-            name: card.name,
-            card_image_path: card.card_image_path,
-          }));
-        if (response.stolen_cards.length === 0 && match.lastRound?.winner_id === 0) {
-          response.stolen_cards = [{
-            name: match.lastRound.player1_name,
-            card_image_path: match.lastRound.player1_image,
-          }];
-        }
-      }
     }
     return result(200, response);
   }
@@ -222,11 +271,8 @@
       match.playerHand.shift();
       match.computerHand.shift();
       if (winnerId === match.playerId) {
-        addCard(store, match.playerId, computerCard.id);
         match.playerScore++;
       } else {
-        removeCard(store, match.playerId, playerCard.id);
-        match.stolenCards = [...(match.stolenCards || []), playerCard.id];
         match.computerScore++;
       }
     }
@@ -305,12 +351,24 @@
     const store = readStore();
     const player = currentPlayer(store);
 
-    if (options.method !== 'POST' && ['login', 'register', 'create_account', 'logout', 'open_pack', 'find_match', 'play_turn', 'surrender', 'claim_reward'].includes(action)) {
+    if (options.method !== 'POST' && ['login', 'register', 'create_account', 'logout', 'open_pack', 'find_match', 'play_turn', 'surrender', 'claim_reward', 'claim_mission', 'tutorial_complete', 'onboarding_step'].includes(action)) {
       return failure(405, 'Cette action doit être envoyée en POST.');
     }
 
     if (route === 'current_player') {
-      return result(200, player ? { authenticated: true, pseudo: player.pseudo } : { authenticated: false });
+      let changed = player ? ensureProgressState(player) : false;
+      if (player && !player.onboardingStep && !player.tutorialCompleted) {
+        player.onboardingStep = 'open_pack';
+        changed = true;
+      }
+      if (changed) saveStore(store);
+      return result(200, player
+        ? {
+          authenticated: true,
+          pseudo: player.pseudo,
+          onboarding_step: player.onboardingStep || 'done',
+        }
+        : { authenticated: false });
     }
     if (action === 'register' || action === 'login' || action === 'create_account') {
       const pseudo = typeof body.pseudo === 'string' ? body.pseudo.trim() : '';
@@ -329,6 +387,9 @@
           salt,
           passwordHash: await passwordHash(password, salt),
           lastPackOpenedAt: null,
+          onboardingStep: 'open_pack',
+          bonusPacks: 0,
+          missionClaims: {},
         };
         store.players.push(created);
         store.collections[String(created.id)] = {};
@@ -339,6 +400,9 @@
       }
       if (!existing || await passwordHash(password, existing.salt) !== existing.passwordHash) {
         return failure(401, 'Pseudo ou mot de passe incorrect.');
+      }
+      if (!existing.onboardingStep && !existing.tutorialCompleted) {
+        existing.onboardingStep = 'open_pack';
       }
       store.currentPlayerId = existing.id;
       activity(store, existing.id, 'login');
@@ -353,7 +417,12 @@
     }
     if (!player) return failure(401, 'Non connecté.');
 
+    const progressStateChanged = ensureProgressState(player);
     const catalog = await loadCatalog();
+    if (route === 'progress') {
+      if (progressStateChanged) saveStore(store);
+      return result(200, playerProgress(store, catalog, player));
+    }
     if (route === 'collection') return result(200, { cards: ownedCards(store, catalog, player.id) });
     if (route === 'all_cards') {
       const quantities = store.collections[String(player.id)] || {};
@@ -365,21 +434,76 @@
       const logs = store.activityLogs.filter(log => log.player_id === player.id).slice(-100).reverse();
       return result(200, { logs });
     }
+    if (action === 'tutorial_complete') {
+      const match = matchById(store, body.match_id);
+      if (!match || match.playerId !== player.id) return failure(404, 'Partie introuvable.');
+      match.tutorialPending = false;
+      player.tutorialCompleted = true;
+      player.onboardingStep = 'done';
+      saveStore(store);
+      return result(200, { success: true });
+    }
+    if (action === 'onboarding_step') {
+      const validSteps = ['catalog', 'deck', 'done'];
+      if (!validSteps.includes(body.step)) return failure(400, 'Étape de tutoriel invalide.');
+      player.onboardingStep = body.step;
+      if (body.step === 'done') {
+        player.tutorialCompleted = true;
+        store.matches
+          .filter(match => match.playerId === player.id)
+          .forEach(match => {
+            match.tutorialPending = false;
+          });
+      }
+      saveStore(store);
+      return result(200, { success: true, onboarding_step: player.onboardingStep });
+    }
+    if (action === 'claim_mission') {
+      const progress = playerProgress(store, catalog, player);
+      const mission = progress.missions.find(item => item.id === body.mission_id);
+      if (!mission) return failure(404, 'Mission introuvable.');
+      if (mission.claimed) return failure(409, 'La récompense de cette mission a déjà été réclamée.');
+      if (!mission.completed) return failure(400, 'Cette mission n’est pas encore terminée.');
+
+      player.missionClaims[mission.claim_key || mission.id] = true;
+      player.bonusPacks++;
+      activity(store, player.id, 'mission_reward', {
+        mission_id: mission.id,
+        reward: 'bonus_pack',
+      });
+      saveStore(store);
+      return result(200, {
+        success: true,
+        bonus_packs: player.bonusPacks,
+        progress: playerProgress(store, catalog, player),
+      });
+    }
     if (action === 'open_pack') {
       const now = Date.now();
-      const remaining = player.lastPackOpenedAt ? 20 * 60 * 1000 - (now - player.lastPackOpenedAt) : 0;
-      if (remaining > 0) {
+      const bonusPack = player.bonusPacks > 0;
+      const remaining = !bonusPack && player.lastPackOpenedAt
+        ? 20 * 60 * 1000 - (now - player.lastPackOpenedAt)
+        : 0;
+      if (!bonusPack && remaining > 0) {
         return failure(429, 'Pack pas encore disponible.', { remaining_minutes: Math.ceil(remaining / 60000) });
       }
+      if (bonusPack) player.bonusPacks--;
       const cards = randomCardIds(catalog).map(id => catalog.find(card => card.id === id));
       cards.forEach(card => addCard(store, player.id, card.id));
+      if (player.onboardingStep === 'open_pack') player.onboardingStep = 'collection';
       player.lastPackOpenedAt = now;
       activity(store, player.id, 'pack_opened', {
         cards: cards.map(card => card.name),
         count: cards.length,
       });
       saveStore(store);
-      return result(200, { success: true, cards, last_pack_opened_at: new Date(now).toISOString() });
+      return result(200, {
+        success: true,
+        cards,
+        bonus_pack: bonusPack,
+        bonus_packs: player.bonusPacks,
+        last_pack_opened_at: new Date(now).toISOString(),
+      });
     }
     if (action === 'find_match') {
       const ids = body.card_ids;
@@ -393,6 +517,7 @@
       }
       const playerCardIds = ids.map(Number);
       const computerHand = randomCardIds(catalog, 5, playerCardIds);
+      if (player.onboardingStep === 'deck') player.onboardingStep = 'duel';
       const match = {
         id: store.nextMatchId++,
         playerId: player.id,
@@ -405,7 +530,7 @@
         computerScore: 0,
         winnerId: null,
         rewardClaimed: false,
-        stolenCards: [],
+        tutorialPending: player.tutorialCompleted !== true,
         lastRound: null,
       };
       store.matches.push(match);
@@ -437,7 +562,14 @@
         card: card.name,
       });
       saveStore(store);
-      return result(200, { success: true, card });
+      return result(200, {
+        success: true,
+        card: {
+          id: card.id,
+          name: card.name,
+          card_image_path: card.card_image_path,
+        },
+      });
     }
     if (action === 'play_turn') {
       const match = matchById(store, body.match_id);
@@ -461,28 +593,20 @@
       const match = matchById(store, body.match_id);
       if (!match || match.playerId !== player.id) return failure(404, 'Partie introuvable.');
       if (match.status !== 'in_progress') return failure(400, 'Cette partie ne peut plus être abandonnée.');
-      const cardsLost = match.playerHand.length;
-      match.stolenCards = [...(match.stolenCards || []), ...match.playerHand];
-      match.playerHand.forEach(cardId => removeCard(store, player.id, cardId));
       match.playerHand = [];
       match.status = 'finished';
       match.winnerId = 0;
-      const stolenCards = match.stolenCards
-        .map(id => catalog.find(card => card.id === id))
-        .filter(Boolean)
-        .map(card => ({
-          id: card.id,
-          name: card.name,
-          card_image_path: card.card_image_path,
-        }));
       activity(store, player.id, 'duel_surrendered', {
         match_id: match.id,
         opponent: 'Ordinateur',
-        cards_lost: cardsLost,
       });
       activity(store, player.id, 'duel_lost', { match_id: match.id, opponent: 'Ordinateur', by_surrender: true });
       saveStore(store);
-      return result(200, { success: true, winner_id: 0, forfeited_player_id: player.id, stolen_cards: stolenCards });
+      return result(200, {
+        success: true,
+        winner_id: 0,
+        forfeited_player_id: player.id,
+      });
     }
     return failure(404, 'Route ou action introuvable.');
   }

@@ -5,6 +5,111 @@ function showPlayer(pseudo) {
   document.getElementById('auth-box').style.display = 'none';
   document.getElementById('game-box').style.display = 'block';
   document.getElementById('main-nav').hidden = false;
+  window.dispatchEvent(new Event('toptrump:player-authenticated'));
+}
+
+async function refreshProgress() {
+  const panel = document.getElementById('progress-panel');
+  try {
+    const response = await window.apiFetch(`${API_URL}?route=progress`);
+    const data = await readApiResponse(response);
+    if (!response.ok) throw new Error(data.error || 'Impossible de charger ta progression.');
+
+    const collectionLabel = document.getElementById('collection-progress-label');
+    collectionLabel.textContent = `${data.unique_cards} carte${data.unique_cards === 1 ? '' : 's'} découverte${data.unique_cards === 1 ? '' : 's'} sur ${data.total_cards}.`;
+    const collectionBar = document.getElementById('collection-progress-bar');
+    const collectionPercent = data.total_cards ? data.unique_cards / data.total_cards * 100 : 0;
+    collectionBar.style.width = `${collectionPercent}%`;
+    const collectionTrack = collectionBar.parentElement;
+    collectionTrack.setAttribute('aria-valuemin', '0');
+    collectionTrack.setAttribute('aria-valuemax', String(data.total_cards));
+    collectionTrack.setAttribute('aria-valuenow', String(data.unique_cards));
+
+    const bonusPacks = Number(data.bonus_packs) || 0;
+    document.getElementById('bonus-pack-count').textContent = bonusPacks
+      ? `${bonusPacks} pack${bonusPacks === 1 ? '' : 's'} bonus disponible${bonusPacks === 1 ? '' : 's'}`
+      : 'Termine des missions pour gagner des packs bonus.';
+    document.getElementById('pack-btn-description').textContent = bonusPacks
+      ? `${bonusPacks} pack${bonusPacks === 1 ? '' : 's'} bonus disponible${bonusPacks === 1 ? '' : 's'} : ouvre-en un sans attendre le délai habituel.`
+      : 'Ajoute 5 cartes aléatoires à ta collection. Un pack est disponible toutes les 20 minutes.';
+
+    const missionsGrid = document.getElementById('missions-grid');
+    missionsGrid.replaceChildren();
+    data.missions.forEach(mission => {
+      const card = document.createElement('article');
+      card.className = 'mission-card';
+
+      const title = document.createElement('h3');
+      title.textContent = mission.title;
+      const progress = document.createElement('p');
+      progress.className = 'mission-progress-label';
+      progress.textContent = mission.claimed
+        ? 'Récompense réclamée'
+        : mission.completed
+          ? 'Mission accomplie · pack bonus à réclamer'
+          : `Progression : ${mission.progress}/${mission.goal}`;
+      const track = document.createElement('div');
+      track.className = 'progress-track mission-progress-track';
+      track.setAttribute('role', 'progressbar');
+      track.setAttribute('aria-label', `Progression : ${mission.title}`);
+      track.setAttribute('aria-valuemin', '0');
+      track.setAttribute('aria-valuemax', String(mission.goal));
+      track.setAttribute('aria-valuenow', String(mission.progress));
+      const fill = document.createElement('span');
+      fill.style.width = `${mission.progress / mission.goal * 100}%`;
+      track.appendChild(fill);
+      card.append(title, progress, track);
+
+      if (mission.can_claim) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'button-secondary mission-claim-button';
+        button.textContent = 'Réclamer un pack bonus';
+        button.addEventListener('click', () => claimMission(mission.id, button));
+        card.appendChild(button);
+      }
+      missionsGrid.appendChild(card);
+    });
+
+    const badges = document.getElementById('collection-badges');
+    badges.replaceChildren();
+    data.badges.forEach(badge => {
+      const item = document.createElement('div');
+      item.className = `collection-badge${badge.earned ? ' is-earned' : ''}`;
+      item.setAttribute('aria-label', `${badge.title} : ${badge.earned ? 'obtenu' : `${data.unique_cards} sur ${badge.goal} cartes`}`);
+      const icon = document.createElement('span');
+      icon.className = 'badge-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = badge.earned ? '★' : '☆';
+      const name = document.createElement('span');
+      name.textContent = badge.title;
+      item.append(icon, name);
+      badges.appendChild(item);
+    });
+
+    panel.hidden = false;
+  } catch (error) {
+    console.error('Impossible de charger la progression :', error);
+    document.getElementById('message').textContent = error.message || 'Impossible de charger ta progression.';
+  }
+}
+
+async function claimMission(missionId, button) {
+  button.disabled = true;
+  try {
+    const response = await window.apiFetch(`${API_URL}?action=claim_mission`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mission_id: missionId }),
+    });
+    const data = await readApiResponse(response);
+    if (!response.ok) throw new Error(data.error || 'Impossible de réclamer cette récompense.');
+    document.getElementById('message').textContent = 'Pack bonus ajouté : ouvre-le dès maintenant !';
+    await refreshProgress();
+  } catch (error) {
+    document.getElementById('message').textContent = error.message || 'Impossible de réclamer cette récompense.';
+    button.disabled = false;
+  }
 }
 
 function showAuthError(action, message) {
@@ -84,6 +189,7 @@ async function logout() {
     }
 
     document.getElementById('game-box').style.display = 'none';
+    document.getElementById('progress-panel').hidden = true;
     document.getElementById('auth-box').style.display = 'block';
     document.getElementById('main-nav').hidden = true;
     document.getElementById('message').textContent = '';
@@ -127,6 +233,9 @@ async function openPack() {
       return;
     }
     message.textContent = `${data.cards.length} nouvelles cartes ajoutées à ta collection.`;
+    if (data.bonus_pack) {
+      message.textContent = `${data.cards.length} nouvelles cartes ajoutées avec ton pack bonus.`;
+    }
     data.cards.forEach(card => {
       const article = document.createElement('article');
       article.className = 'opened-pack-card';
@@ -142,6 +251,8 @@ async function openPack() {
       openedPackCards.appendChild(article);
     });
     openedPack.hidden = data.cards.length === 0;
+    refreshProgress();
+    window.dispatchEvent(new Event('toptrump:pack-opened'));
   } catch (error) {
     message.textContent = error.message || 'Impossible de contacter le serveur.';
   } finally {
@@ -160,4 +271,5 @@ document.getElementById('find-match-btn').addEventListener('click', () => {
   window.location.href = 'deck.html';
 });
 
+window.addEventListener('toptrump:player-authenticated', refreshProgress);
 restoreSession();

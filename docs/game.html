@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Top Trump - Partie</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="js/static-api.js"></script>
-      <link rel="stylesheet" href="css/game.css">
+  <link rel="stylesheet" href="css/style.css?v=20261027-progress">
+  <script src="js/static-api.js?v=20261027-progression"></script>
+      <link rel="stylesheet" href="css/game.css?v=20261027-progress">
   </head>
 <body>
   <header class="site-header">
@@ -35,7 +35,7 @@
   </div>
 </div>
 
-<p class="page-help duel-help">Premier à 3 points : chaque manche remportée rapporte 1 point et met les cartes jouées de côté. En cas d’égalité, personne ne marque et les cartes restent dans les piles. Garde un œil sur le score : un point peut suffire à conclure le duel !</p>
+<p id="duel-help" class="page-help duel-help">Premier à 3 points : chaque manche remportée rapporte 1 point et met les cartes jouées de côté. En cas d’égalité, personne ne marque et les cartes restent dans les piles. Garde un œil sur le score : un point peut suffire à conclure le duel !</p>
 
 <section id="game-over" class="game-over-panel" aria-live="polite" hidden>
   <div>
@@ -43,16 +43,16 @@
     <h2 id="game-over-text" tabindex="-1"></h2>
     <p>Le premier joueur à 3 points remporte la partie.</p>
   </div>
+  <section id="duel-progress-summary" class="duel-progress-summary" aria-labelledby="duel-progress-title">
+    <h3 id="duel-progress-title">Ta progression</h3>
+    <p id="duel-progress-message" role="status" aria-live="polite">Mise à jour de tes missions...</p>
+  </section>
   <section id="reward-selection" class="reward-selection" aria-labelledby="reward-selection-title" hidden>
-    <h3 id="reward-selection-title">Choisis ta récompense</h3>
-    <p>Choisis une carte parmi les cinq cartes de l’ordinateur.</p>
+    <h3 id="reward-selection-title">Choisis une carte à voler</h3>
+    <p>Tu peux voler une seule carte parmi les cinq cartes de l’ordinateur.</p>
     <div id="reward-cards" class="reward-cards"></div>
     <p id="reward-message" class="reward-message" role="status" aria-live="polite"></p>
-    <button id="claim-reward-btn" class="button-primary" type="button" disabled>Ajouter cette carte à ma collection</button>
-  </section>
-  <section id="loss-summary" class="loss-summary" aria-labelledby="loss-summary-title" hidden>
-    <h3 id="loss-summary-title">Cartes remportées par l’ordinateur</h3>
-    <div id="stolen-cards" class="stolen-cards"></div>
+    <button id="claim-reward-btn" class="button-primary" type="button" disabled>Voler cette carte</button>
   </section>
   <div class="game-over-actions">
     <a class="button-primary game-home-link" href="index.html">Retour à l’accueil</a>
@@ -110,9 +110,29 @@
   <button class="attr-btn" type="button" data-attr="dangerosite">Dangerosité</button>
   <button class="attr-btn" type="button" data-attr="intelligence">Intelligence</button>
 </section>
-<script src="js/game.js?v=20261013-1"></script>
 
   </main>
+  <div id="tutorial-backdrop" class="tutorial-backdrop" hidden></div>
+  <svg id="tutorial-arrow" class="tutorial-arrow" aria-hidden="true" hidden>
+    <defs>
+      <marker id="tutorial-arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z"></path>
+      </marker>
+    </defs>
+    <line id="tutorial-arrow-line" marker-end="url(#tutorial-arrowhead)"></line>
+  </svg>
+  <section id="match-tutorial" class="match-tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" aria-describedby="tutorial-description" hidden>
+    <p id="tutorial-step-label" class="eyebrow"></p>
+    <h2 id="tutorial-title"></h2>
+    <p id="tutorial-description"></p>
+    <p id="tutorial-error" class="tutorial-error" role="status" aria-live="polite"></p>
+    <div class="tutorial-actions">
+      <button id="tutorial-skip" class="button-secondary" type="button">Passer</button>
+      <button id="tutorial-previous" class="button-secondary" type="button">Précédent</button>
+      <button id="tutorial-next" class="button-primary" type="button">Suivant</button>
+    </div>
+  </section>
+  <script src="js/game.js?v=20261027-progress"></script>
   <footer class="site-footer">
     <span class="footer-mark" aria-hidden="true">T</span>
     <p>Top Trump <span>·</span> À toi de jouer.</p>

@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Top Trump - Accueil</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="js/static-api.js"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261027-progress">
+  <script src="js/static-api.js?v=20261027-progression"></script>
   </head>
 <body>
   <header class="site-header">
@@ -79,7 +79,7 @@
     <button class="action-card" id="pack-btn" type="button">
       <span class="action-icon" aria-hidden="true">✦</span>
       <span class="action-title">Ouvrir un pack</span>
-      <span class="action-description">Ajoute 5 cartes aléatoires à ta collection. Un pack est disponible toutes les 20 minutes.</span>
+      <span class="action-description" id="pack-btn-description">Ajoute 5 cartes aléatoires à ta collection. Un pack est disponible toutes les 20 minutes.</span>
     </button>
     <button class="action-card action-card-featured" id="find-match-btn" type="button">
       <span class="action-icon" aria-hidden="true">⚔</span>
@@ -87,6 +87,30 @@
       <span class="action-description">Choisis 5 cartes de ta collection avant d’affronter l’ordinateur.</span>
     </button>
   </div>
+
+  <section id="progress-panel" class="progress-panel" aria-labelledby="progress-title" hidden>
+    <div class="progress-heading">
+      <div>
+        <span class="eyebrow">TES OBJECTIFS</span>
+        <h2 id="progress-title">Missions et collection</h2>
+      </div>
+      <p id="bonus-pack-count" class="bonus-pack-count"></p>
+    </div>
+    <div class="collection-progress">
+      <div class="collection-progress-label">
+        <h3>Collection</h3>
+        <p id="collection-progress-label"></p>
+      </div>
+      <div class="progress-track" role="progressbar" aria-label="Progression de la collection">
+        <span id="collection-progress-bar"></span>
+      </div>
+    </div>
+    <div id="missions-grid" class="missions-grid" aria-live="polite"></div>
+    <div class="badge-section">
+      <h3>Badges de collection</h3>
+      <div id="collection-badges" class="collection-badges"></div>
+    </div>
+  </section>
 
   <p id="message" class="message" role="status" aria-live="polite"></p>
   <section id="opened-pack" class="opened-pack" aria-labelledby="opened-pack-title" hidden>
@@ -99,7 +123,8 @@
   <p class="dashboard-help">Retrouve tes cartes et le catalogue complet dans le menu en haut de la page.</p>
 </div>
 
-<script src="js/script.js?v=20261006-3"></script>
+<script src="js/onboarding.js?v=20261027-3"></script>
+<script src="js/script.js?v=20261027-progress"></script>
 
   </main>
   <footer class="site-footer">
